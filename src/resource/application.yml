@@ -108,5 +108,6 @@ management:
 
 logging:
   level:
-    org.springframework.cloud.gateway: INFO
-    org.springframework.security: INFO
+    org.springframework.security: DEBUG
+    org.springframework.boot.autoconfigure.security: DEBUG
+    org.springframework.boot.autoconfigure: DEBUG
