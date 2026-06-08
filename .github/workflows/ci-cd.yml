@@ -26,33 +26,33 @@ permissions:
 jobs:
 
   build-and-test:
-  name: 🔨 Compilar y testear
-  runs-on: ubuntu-latest
+    name: 🔨 Compilar y testear
+    runs-on: ubuntu-latest
 
-  steps:
-    - name: Clonar repositorio
-      uses: actions/checkout@v4
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
 
-    - name: Configurar JDK 21 (Temurin)
-      uses: actions/setup-java@v4
-      with:
-        java-version: '21'
-        distribution: 'temurin'
-        cache: maven
+      - name: Configurar JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
 
-    - name: Compilar proyecto
-      run: mvn -B --no-transfer-progress compile -q
+      - name: Compilar proyecto
+        run: mvn -B --no-transfer-progress compile -q
 
-    - name: Correr tests
-      run: mvn -B --no-transfer-progress test
+      - name: Correr tests
+        run: mvn -B --no-transfer-progress test
 
-    - name: Publicar resultados de tests en GitHub
-      uses: dorny/test-reporter@v1
-      if: always()
-      with:
-        name: Resultados de tests
-        path: target/surefire-reports/*.xml
-        reporter: java-junit
+      - name: Publicar resultados de tests en GitHub
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Resultados de tests
+          path: target/surefire-reports/*.xml
+          reporter: java-junit
 
   docker-publish:
     name: 🐳 Publicar imagen Docker
