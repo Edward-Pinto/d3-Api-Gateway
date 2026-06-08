@@ -11,9 +11,9 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import reactor.core.publisher.Flux;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-
+import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
+import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 /**
  * Seguridad del API Gateway.
  *
@@ -29,6 +29,13 @@ import java.util.Map;
 @Configuration
 @EnableWebFluxSecurity
 public class SecurityConfig {
+
+    @Bean
+    public ReactiveJwtDecoder jwtDecoder() {
+        return NimbusReactiveJwtDecoder.withJwkSetUri(
+                "http://keycloak:8080/realms/viva-eventos/protocol/openid-connect/certs"
+        ).build();
+    }
 
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
