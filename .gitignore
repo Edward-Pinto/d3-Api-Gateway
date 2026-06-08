@@ -1,0 +1,132 @@
+# ===========================
+# MAVEN
+# ===========================
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# ===========================
+# SECRETOS Y ENTORNO
+# ===========================
+.env
+*.env
+!.env.example
+application-local.yml
+application-prod.yml
+application-secret.yml
+**/src/main/resources/application-local.yml
+**/src/main/resources/application-prod.yml
+
+# Claves RSA y certificados
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+*.truststore
+
+# ===========================
+# IDEs
+# ===========================
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+*.code-workspace
+
+### Eclipse ###
+.metadata
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.loadpath
+.recommenders
+
+# ===========================
+# SISTEMA OPERATIVO
+# ===========================
+
+### macOS ###
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+### Windows ###
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+### Linux ###
+*~
+
+# ===========================
+# DOCKER
+# ===========================
+docker-compose.override.yml
+.docker/
+
+# ===========================
+# LOGS
+# ===========================
+logs/
+*.log
+*.log.*
+spring.log
+
+# ===========================
+# COBERTURA Y REPORTES
+# ===========================
+/report/
+/reports/
+jacoco.exec
+/target/site/
+
+# ===========================
+# KEYCLOAK LOCAL
+# ===========================
+keycloak-data/
+keycloak/data/
+# para no commitear exports de realm con secretos (luego veremos que es esto).
+keycloak/realms/*.json 
+keycloak/realms/*.json
+!keycloak/realms/viva_eventos.json
+
+# ===========================
+# BASE DE DATOS LOCAL
+# ===========================
+postgres-data/
+data/
