@@ -1,0 +1,112 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  # ── Seguridad: valida JWT contra Keycloak ─────────────────────────────────
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://keycloak:8080/realms/viva-eventos}
+
+  # ── Rutas del Gateway ──────────────────────────────────────────────────────
+  cloud:
+    gateway:
+      # Propagar headers originales a los microservicios
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+
+      routes:
+
+        # ── auth-service (puerto 8081) ──────────────────────────────────────
+        - id: auth-service
+          uri: ${AUTH_SERVICE_URL:http://auth-service:8081}
+          predicates:
+            - Path=/auth/**
+          filters:
+            - StripPrefix=0
+
+        # ── event-service (puerto 8082) ─────────────────────────────────────
+        # Rutas públicas — sin JWT
+        - id: event-service-public
+          uri: ${EVENT_SERVICE_URL:http://event-service:8082}
+          predicates:
+            - Path=/api/v1/events,/api/v1/events/search,/api/v1/events/*
+            - Method=GET
+          filters:
+            - StripPrefix=0
+
+        # Rutas protegidas del event-service
+        - id: event-service-protected
+          uri: ${EVENT_SERVICE_URL:http://event-service:8082}
+          predicates:
+            - Path=/api/v1/events/**
+          filters:
+            - StripPrefix=0
+
+        # ── order-service (puerto 8083) ─────────────────────────────────────
+        - id: order-service
+          uri: ${ORDER_SERVICE_URL:http://order-service:8083}
+          predicates:
+            - Path=/api/cart/**,/api/discount-codes/**
+          filters:
+            - StripPrefix=0
+
+        # ── payment-service (puerto 8084) ───────────────────────────────────
+        # Webhook de MercadoPago: público (sin JWT)
+        - id: payment-service-webhook
+          uri: ${PAYMENT_SERVICE_URL:http://payment-service:8084}
+          predicates:
+            - Path=/api/payments/webhook/**
+          filters:
+            - StripPrefix=0
+
+        # Resto del payment-service: protegido
+        - id: payment-service
+          uri: ${PAYMENT_SERVICE_URL:http://payment-service:8084}
+          predicates:
+            - Path=/api/payments/**
+          filters:
+            - StripPrefix=0
+
+        # ── ticket-service (puerto 8085) ────────────────────────────────────
+        - id: ticket-service
+          uri: ${TICKET_SERVICE_URL:http://ticket-service:8085}
+          predicates:
+            - Path=/api/tickets/**
+          filters:
+            - StripPrefix=0
+
+      # ── CORS global ────────────────────────────────────────────────────────
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
+
+# ── Actuator para health checks de K8s ──────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    org.springframework.security: INFO
