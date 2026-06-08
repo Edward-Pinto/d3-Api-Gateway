@@ -1,107 +1,95 @@
 # ============================================================
-
 # CI/CD — api-gateway
-
 #
-
 # Qué hace este pipeline:
-
 # 1. En todo push/PR a main: compila el código y corre los tests.
-
 # 2. Solo cuando hay merge a main: construye el JAR, luego la
-
 # imagen Docker, y la publica en Docker Hub.
-
 #
-
 # Secrets necesarios:
-
 # DOCKERHUB_USERNAME
-
 # DOCKERHUB_TOKEN
-
 # ============================================================
-
 name: CI/CD — api-gateway
 
 on:
-push:
-branches: [ main ]
-pull_request:
-branches: [ main ]
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 permissions:
-contents: read
-checks: write
-pull-requests: write
+  contents: read
+  checks: write
+  pull-requests: write
 
 jobs:
 
-build-and-test:
-name: 🔨 Compilar y testear
-runs-on: ubuntu-latest
+  build-and-test:
+  name: 🔨 Compilar y testear
+  runs-on: ubuntu-latest
 
-steps:
-  - name: Clonar repositorio
-    uses: actions/checkout@v4
+  steps:
+    - name: Clonar repositorio
+      uses: actions/checkout@v4
 
-  - name: Configurar JDK 21 (Temurin)
-    uses: actions/setup-java@v4
-    with:
-      java-version: '21'
-      distribution: 'temurin'
-      cache: maven
+    - name: Configurar JDK 21 (Temurin)
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: maven
 
-  - name: Compilar proyecto
-    run: mvn -B --no-transfer-progress compile -q
+    - name: Compilar proyecto
+      run: mvn -B --no-transfer-progress compile -q
 
-  - name: Correr tests
-    run: mvn -B --no-transfer-progress test
+    - name: Correr tests
+      run: mvn -B --no-transfer-progress test
 
-  - name: Publicar resultados de tests en GitHub
-    uses: dorny/test-reporter@v1
-    if: always()
-    with:
-      name: Resultados de tests
-      path: target/surefire-reports/*.xml
-      reporter: java-junit
+    - name: Publicar resultados de tests en GitHub
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: Resultados de tests
+        path: target/surefire-reports/*.xml
+        reporter: java-junit
 
-docker-publish:
-name: 🐳 Publicar imagen Docker
-needs: build-and-test
-if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-runs-on: ubuntu-latest
+  docker-publish:
+    name: 🐳 Publicar imagen Docker
+    needs: build-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
 
 
-steps:
-  - name: Clonar repositorio
-    uses: actions/checkout@v4
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
 
-  - name: Configurar JDK 21 (Temurin)
-    uses: actions/setup-java@v4
-    with:
-      java-version: '21'
-      distribution: 'temurin'
-      cache: maven
+      - name: Configurar JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
 
-  - name: Empaquetar JAR (sin tests)
-    run: mvn -B --no-transfer-progress package -DskipTests -q
+      - name: Empaquetar JAR (sin tests)
+        run: mvn -B --no-transfer-progress package -DskipTests -q
 
-  - name: Iniciar sesión en Docker Hub
-    uses: docker/login-action@v3
-    with:
-      username: ${{ secrets.DOCKERHUB_USERNAME }}
-      password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Iniciar sesión en Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-  - name: Configurar Docker Buildx
-    uses: docker/setup-buildx-action@v3
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-  - name: Construir y publicar imagen
-    uses: docker/build-push-action@v6
-    with:
-      context: .
-      push: true
-      tags: ${{ secrets.DOCKERHUB_USERNAME }}/api-gateway:latest
-      cache-from: type=gha
-      cache-to: type=gha,mode=max
+      - name: Construir y publicar imagen
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/api-gateway:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
