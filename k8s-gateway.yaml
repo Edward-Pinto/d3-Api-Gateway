@@ -1,7 +1,5 @@
 # ================================================================
 # API Gateway — VivaEventos
-# Agregar al k8s-all.yaml o aplicar por separado:
-#   kubectl apply -f k8s-gateway.yaml
 # ================================================================
 
 # ── ConfigMap ────────────────────────────────────────────────────
@@ -11,11 +9,11 @@ metadata:
   name: gateway-config
   namespace: viva-eventos
 data:
-  AUTH_SERVICE_URL:    "http://auth-service:8081"
-  EVENT_SERVICE_URL:   "http://event-service:8082"
-  ORDER_SERVICE_URL:   "http://order-service:8083"
+  AUTH_SERVICE_URL: "http://auth-service:8081"
+  EVENT_SERVICE_URL: "http://event-service:8082"
+  ORDER_SERVICE_URL: "http://order-service:8083"
   PAYMENT_SERVICE_URL: "http://payment-service:8084"
-  TICKET_SERVICE_URL:  "http://ticket-service:8085"
+  TICKET_SERVICE_URL: "http://ticket-service:8085"
 
 ---
 # ── Deployment ───────────────────────────────────────────────────
@@ -50,7 +48,7 @@ spec:
           image: danielgomezcano/api-gateway:latest
           imagePullPolicy: Always
           ports:
-            - containerPort: 8080
+            - containerPort: 8090
           envFrom:
             - configMapRef:
                 name: microservices-config   # KEYCLOAK_ISSUER_URI
@@ -59,19 +57,19 @@ spec:
           readinessProbe:
             httpGet:
               path: /actuator/health
-              port: 8080
+              port: 8090
             initialDelaySeconds: 30
             periodSeconds: 10
             failureThreshold: 5
           livenessProbe:
             httpGet:
               path: /actuator/health
-              port: 8080
+              port: 8090
             initialDelaySeconds: 45
             periodSeconds: 30
 
 ---
-# ── Service (NodePort 30086) ─────────────────────────────────────
+# ── Service (NodePort 30090) ─────────────────────────────────────
 apiVersion: v1
 kind: Service
 metadata:
@@ -81,9 +79,9 @@ spec:
   selector:
     app: api-gateway
   ports:
-    - port: 8080
-      targetPort: 8080
-      nodePort: 30086
+    - port: 8090
+      targetPort: 8090
+      nodePort: 30090
   type: NodePort
 
 ---
@@ -108,4 +106,4 @@ spec:
               service:
                 name: api-gateway
                 port:
-                  number: 8080
+                  number: 8090
