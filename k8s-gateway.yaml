@@ -35,14 +35,18 @@ spec:
         app: api-gateway
     spec:
       initContainers:
-        - name: wait-for-keycloak
-          image: busybox:1.36
-          command:
-            - sh
-            - -c
-            - |
-              until nc -z keycloak 8080; do sleep 5; done
-              echo "✓ Keycloak listo."
+      - name: wait-for-keycloak
+        image: busybox:1.36
+        command:
+          - sh
+          - -c
+          - |
+            echo "Esperando realm OIDC de Keycloak..."
+            until wget -qO- http://keycloak:8080/realms/viva-eventos/.well-known/openid-configuration > /dev/null 2>&1; do
+              echo "  Realm no disponible, reintentando en 5s..."
+              sleep 5
+            done
+            echo "✓ Keycloak realm listo."
       containers:
         - name: api-gateway
           image: danielgomezcano/api-gateway:latest
